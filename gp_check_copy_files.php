@@ -14,6 +14,10 @@
  *   
  *   # php gp_check_copy_files.php -h 
  *   #help
+ * 
+ *   # php gp_check_copy_files.php -lite path1
+ *   Verifica solo i nomi dei file e la dimensione
+ * 
  */
 
 /**
@@ -25,6 +29,17 @@ array_shift($argv);
 if (count($argv) == 0 || $argv[0] == "-h" || $argv[0] == "-help") {
     help_and_die();
 }
+$lite = false;
+if (count($argv) > 0) {
+    // cerca un -lite e se lo trova lo rimuove e setta la variabile $lite a true
+    if (($key = array_search('-lite', $argv)) !== false) {
+        unset($argv[$key]);
+        $lite = true;
+    }
+    // cancello le chiavi dell'array argv
+    $argv = array_values($argv);
+}
+
 if (count($argv) == 1) {
     $files = scanAllDir($argv[0]);
     $name = "md5_check".sanitize_key($argv[0])."_".date('YmdHis').".txt";
@@ -145,17 +160,22 @@ function convert_checkfile_to_array($path) {
  */
 
 function scanAllDir($dir, $base_path="/") {
+  global $lite;
   $result = [];
   foreach(scandir($dir) as $filename) {
     if ($filename[0] === '.' || $filename[0] === '..') continue;
     $filePath = $dir . '/' . $filename;
     if (is_dir($filePath)) {
-      foreach (scanAllDir($filePath, $filename) as $childFilename) {
+      foreach (scanAllDir($filePath, $base_path."/".$filename) as $childFilename) {
         $result[] = $childFilename;
       }
     } else {
-      $md5 = md5_file( $filePath );
-      $result[] = $md5 ." ". strtolower(str_replace(["\\","//"],"/", $base_path."/".$filename));
+        if ($lite) {
+            $result[] = filesize($filePath) ." ". strtolower(str_replace(["\\","//"],"/", $base_path."/".$filename));
+        } else {
+            $md5 = md5_file( $filePath );
+            $result[] = $md5 ." ". strtolower(str_replace(["\\","//"],"/", $base_path."/".$filename));
+        }
     }
   }
   return $result;

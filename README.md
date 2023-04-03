@@ -17,4 +17,12 @@ il percorso della  cartella per cui creare il file checksum
 
 php gp_check_copy_files.php -h 
 help
+
+ php gp_check_copy_files.php -lite path1
+ Verifica solo i nomi dei file e la dimensione
 ```
+
+# changelog
+v1.1.0 2020-04-03
+#FIXBUG sui percorsi delle cartelle figlie
+#IMPROVEMENT: aggiunta l'opzione -lite per verificare solo i nomi dei file e la dimensione
